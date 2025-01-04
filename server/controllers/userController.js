@@ -41,3 +41,88 @@ exports.addFriend = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// Get mutual friends
+exports.getMutualFriends = async (req, res) => {
+  try {
+    const { userId } = req.params; // The selected user
+    const currentUserId = req.user.id; // Logged-in user
+
+    // Fetch both users
+    const currentUser = await User.findById(currentUserId).populate('friends');
+    const selectedUser = await User.findById(userId).populate('friends');
+
+    if (!currentUser || !selectedUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Find mutual friends
+    const mutualFriends = currentUser.friends.filter(friend => selectedUser.friends.includes(friend._id));
+
+    res.status(200).json({
+      mutualFriends: mutualFriends,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Get common interest-based friend recommendations
+exports.getCommonInterestRecommendations = async (req, res) => {
+  try {
+    const currentUserId = req.user.id; // Logged-in user
+    const currentUser = await User.findById(currentUserId);
+
+    if (!currentUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Assuming that the user profile has an 'interests' field (array of interests)
+    const commonInterestRecommendations = await User.find({
+      interests: { $in: currentUser.interests },
+      _id: { $ne: currentUserId }, // Exclude the current user
+    });
+
+    res.status(200).json({
+      recommendations: commonInterestRecommendations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Display all recommendations on the user's dashboard
+exports.getAllRecommendations = async (req, res) => {
+  try {
+    const currentUserId = req.user.id; // Logged-in user
+    const currentUser = await User.findById(currentUserId).populate('friends');
+
+    if (!currentUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Find mutual friends
+    const mutualFriends = currentUser.friends.filter(friend => selectedUser.friends.includes(friend._id));
+
+    // Get common interest recommendations
+    const commonInterestRecommendations = await User.find({
+      interests: { $in: currentUser.interests },
+      _id: { $ne: currentUserId }, // Exclude the current user
+    });
+
+    // Combine both recommendations
+    const recommendations = {
+      mutualFriends: mutualFriends,
+      commonInterests: commonInterestRecommendations,
+    };
+
+    res.status(200).json({
+      recommendations: recommendations,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
