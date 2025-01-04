@@ -1,19 +1,28 @@
 const express = require("express");
-const { getUsers, addUser, addFriend } = require("../controllers/userController");
-const authMiddleware = require("../middleware/authMiddleware"); // Protect routes with authentication middleware
-const friendRequestRoutes = require("./friendRequestRoutes"); // Import friend request routes
-const { getAllRecommendations } = require("../controllers/userController"); 
+const {
+  getUsers,
+  addUser,
+  addFriend,
+  getCurrentUser,
+  getAllRecommendations,
+} = require("../controllers/userController");
+const authMiddleware = require("../middleware/authMiddleware");
+const friendRequestRoutes = require("./friendRequestRoutes");
 
 const router = express.Router();
 
 // User routes
 router.get("/", authMiddleware, getUsers);
 router.post("/add", addUser);
-router.post("/add-friend", addFriend);
+router.post("/add-friend", authMiddleware, addFriend);
+
+// Get currently logged-in user details
+router.get("/me", authMiddleware, getCurrentUser);
 
 // Friend request routes
-router.use("/friend-requests", friendRequestRoutes); // Add friend request routes here
+router.use("/friend-requests", friendRequestRoutes);
 
-router.get("/recommendations", getAllRecommendations);
+// Recommendations
+router.get("/recommendations", authMiddleware, getAllRecommendations);
 
 module.exports = router;

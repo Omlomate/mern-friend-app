@@ -1,5 +1,22 @@
 const User = require("../models/User");
 
+// Get currently logged-in user details
+exports.getCurrentUser = async (req, res) => {
+  try {
+    const currentUserId = req.user.id; // Assuming `req.user.id` is set by the auth middleware
+    const user = await User.findById(currentUserId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
 // Get all users
 exports.getUsers = async (req, res) => {
   try {
