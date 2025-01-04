@@ -4,17 +4,17 @@ const User = require("../models/User");
 // Send a friend request
 exports.sendFriendRequest = async (req, res) => {
   try {
-    const { receiverId } = req.body;
+    const { recipientId } = req.body; // Use 'recipientId' as in the frontend request
     const senderId = req.user.id; // The sender is the logged-in user
 
-    if (senderId === receiverId) {
+    if (senderId === recipientId) {
       return res.status(400).json({ error: "You cannot send a friend request to yourself" });
     }
 
     // Check if the friend request already exists
     const existingRequest = await FriendRequest.findOne({
       sender: senderId,
-      receiver: receiverId,
+      receiver: recipientId,
     });
 
     if (existingRequest) {
@@ -24,15 +24,17 @@ exports.sendFriendRequest = async (req, res) => {
     // Create and save the new friend request
     const newRequest = new FriendRequest({
       sender: senderId,
-      receiver: receiverId,
+      receiver: recipientId,
     });
 
     await newRequest.save();
     res.status(201).json({ message: "Friend request sent successfully" });
   } catch (error) {
+    console.error(error); // Log the error for debugging
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // Get all friend requests for the logged-in user
 exports.getFriendRequests = async (req, res) => {
