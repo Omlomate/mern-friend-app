@@ -6,10 +6,25 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
+const authRoutes = require("./routes/authRoutes");
+
 
 // Middleware
 app.use(express.json());
 app.use(cors());
+
+
+// Import Routes
+const userRoutes = require("./routes/userRoutes");
+
+// Use Routes
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes); // Add authentication routes
+
+console.log("MONGO_URI:", process.env.MONGO_URI);
+console.log("PORT:", process.env.PORT);
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
 
 // MongoDB Connection
 const PORT = process.env.PORT || 5000;
